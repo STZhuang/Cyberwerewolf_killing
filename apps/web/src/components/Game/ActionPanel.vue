@@ -145,12 +145,12 @@
 import { ref, computed } from 'vue'
 import { Button, Modal, Message } from '@arco-design/web-vue'
 import { 
-  IconThumbUp, 
-  IconUser, 
-  IconMoon, 
+  IconThumbUp,
+  IconUser,
+  IconMoon,
   IconClockCircle,
   IconEye,
-  IconShield,
+  IconSafe,
   IconFire,
   IconHeart,
   IconMore
@@ -282,7 +282,7 @@ function getActionIcon(type: string): any {
     night_action: IconMoon,
     special: IconMore,
     seer_check: IconEye,
-    guard_protect: IconShield,
+    guard_protect: IconSafe,
     witch_poison: IconFire,
     witch_heal: IconHeart,
     werewolf_kill: IconMore, // Fallback since sword doesn't exist
