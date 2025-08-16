@@ -1,0 +1,144 @@
+# Infrastructure-only Docker Compose for Local Development
+# This starts only the middleware services: PostgreSQL, Redis, NATS
+# Application services (API, Agents, Web) run locally via npm/uvicorn
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: cyber_werewolves_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cyber_werewolves}
+      POSTGRES_USER: ${POSTGRES_USER:-werewolves}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/deploy/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
+    networks:
+      - werewolves_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-werewolves} -d ${POSTGRES_DB:-cyber_werewolves}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.3'
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: cyber_werewolves_redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - werewolves_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # NATS Message Queue (Optional - only if needed)
+  nats:
+    image: nats:2.10
+    container_name: cyber_werewolves_nats
+    command: |
+      -js 
+      -m 8222 
+      --cluster_name werewolves_cluster
+      --http_port 8222
+      --store_dir /data/jetstream
+    ports:
+      - "${NATS_PORT:-4222}:4222"
+      - "${NATS_MONITORING_PORT:-8222}:8222"
+    volumes:
+      - nats_data:/data/jetstream
+    networks:
+      - werewolves_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    profiles:
+      - with-nats  # Optional service, enable with: docker-compose --profile with-nats up
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # PostgreSQL Admin Tool (Optional)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: cyber_werewolves_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@werewolves.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - werewolves_network
+    restart: unless-stopped
+    profiles:
+      - with-pgadmin  # Optional service, enable with: docker-compose --profile with-pgadmin up
+
+  # Redis GUI (Optional)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: cyber_werewolves_redis_gui
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: ${REDIS_GUI_USER:-admin}
+      HTTP_PASSWORD: ${REDIS_GUI_PASSWORD:-admin}
+    ports:
+      - "${REDIS_GUI_PORT:-8081}:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - werewolves_network
+    restart: unless-stopped
+    profiles:
+      - with-redis-gui  # Optional service
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nats_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  werewolves_network:
+    driver: bridge
+    name: werewolves_network

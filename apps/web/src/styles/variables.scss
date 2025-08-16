@@ -1,0 +1,56 @@
+/**
+ * SCSS Variables
+ */
+
+// Arco Design CSS variables are automatically imported
+// Here we define additional custom variables
+
+// Layout
+$header-height: 64px;
+$sidebar-width: 280px;
+$footer-height: 60px;
+
+// Z-index layers
+$z-toast: 9999;
+$z-modal: 1000;
+$z-dropdown: 999;
+$z-sticky: 10;
+
+// Animation
+$transition-fast: 0.2s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.5s ease;
+
+// Border radius
+$border-radius-small: 4px;
+$border-radius-medium: 8px;
+$border-radius-large: 12px;
+$border-radius-xl: 16px;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$spacing-xxl: 24px;
+
+// Shadows
+$shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+$shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+// Game-specific colors
+$phase-night: #1f2937;
+$phase-day: #f59e0b;
+$phase-vote: #3b82f6;
+$phase-trial: #ef4444;
+$phase-result: #10b981;
+
+$role-werewolf: #dc2626;
+$role-villager: #059669;
+$role-seer: #7c3aed;
+$role-guard: #0891b2;
+$role-witch: #be185d;
+$role-hunter: #ea580c;
+$role-gm: #f59e0b;

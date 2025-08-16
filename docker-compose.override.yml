@@ -1,0 +1,177 @@
+# Docker Compose override for development
+# This file is automatically loaded by docker-compose for development environment
+
+services:
+  # PostgreSQL Development Configuration
+  postgres:
+    environment:
+      - POSTGRES_DB=cyber_werewolves_dev
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./infra/deploy/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infra/deploy/postgresql.dev.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+
+  # Redis Development Configuration
+  redis:
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_dev_data:/data
+      - ./infra/deploy/redis.dev.conf:/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+
+  # NATS Development Configuration
+  nats:
+    command: |
+      -js 
+      -m 8222 
+      --cluster_name werewolves_cluster_dev
+      --http_port 8222
+      --store_dir /data/jetstream
+      --debug
+      --trace
+    volumes:
+      - nats_dev_data:/data/jetstream
+      - ./infra/deploy/nats.dev.conf:/etc/nats/nats.conf
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  # FastAPI Backend Development Configuration
+  api:
+    environment:
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+      - SHOW_SQL_QUERIES=True
+      - ENABLE_AUTO_RELOAD=True
+      - ENABLE_MIGRATION_AUTO_RUN=True
+      - ENABLE_DEBUG_ENDPOINTS=True
+      - ENABLE_SWAGGER_UI=True
+      # LLM配置通过前端界面动态设置，不使用环境变量
+    volumes:
+      # Mount source code for hot reload
+      - ./apps/api:/app:delegated
+      - ./packages:/packages:delegated
+      - ./apps/api/requirements.txt:/tmp/requirements.txt
+    # Override command for development with auto-reload
+    command: >
+      sh -c "
+        pip install -r /tmp/requirements.txt &&
+        find /packages -name 'requirements.txt' -exec pip install -r {} \; 2>/dev/null || true &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app --log-level debug
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+
+  # WebSocket Gateway Development Configuration
+  websocket-gateway:
+    environment:
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./apps/websocket-gateway:/app:delegated
+    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload --reload-dir /app --log-level debug
+    deploy:
+      replicas: 1
+
+  # Agent Service Development Configuration
+  agents:
+    environment:
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+      - AGENT_TIMEOUT=60
+      - AGENT_MAX_RETRIES=5
+      - ENABLE_AGENT_LOGGING=True
+      # LLM配置通过前端界面动态设置，不使用环境变量
+    volumes:
+      # Mount source code for hot reload
+      - ./apps/agents:/app:delegated
+      - ./packages:/packages:delegated
+      - ./apps/agents/requirements.txt:/tmp/requirements.txt
+    command: >
+      sh -c "
+        pip install -r /tmp/requirements.txt &&
+        find /packages -name 'requirements.txt' -exec pip install -r {} \; 2>/dev/null || true &&
+        uvicorn main:app --host 0.0.0.0 --port 8001 --reload --reload-dir /app --log-level debug
+      "
+    deploy:
+      replicas: 1
+
+  # Vue.js Frontend Development Configuration
+  web:
+    environment:
+      - VITE_API_BASE_URL=http://localhost:${API_PORT:-8000}
+      - VITE_WS_URL=ws://localhost:${WS_GATEWAY_PORT:-8002}
+      - VITE_AGENT_URL=http://localhost:${AGENT_PORT:-8001}
+      - NODE_ENV=development
+      - VITE_DEBUG=true
+    volumes:
+      # Mount source code for hot reload
+      - ./apps/web:/app:delegated
+      # Prevent node_modules from being overridden
+      - /app/node_modules
+      - ./apps/web/package.json:/tmp/package.json
+      - ./apps/web/package-lock.json:/tmp/package-lock.json
+    command: >
+      sh -c "
+        npm ci --cache /tmp/.npm && 
+        npm run dev -- --host 0.0.0.0 --port ${WEB_PORT:-3000}
+      "
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/web/src
+          target: /app/src
+        - action: rebuild
+          path: ./apps/web/package.json
+
+  # Development-only services
+  redis-cli:
+    image: redis:7-alpine
+    container_name: cyber_werewolves_redis_cli
+    command: redis-cli -h redis -p 6379
+    profiles:
+      - tools
+    depends_on:
+      - redis
+
+  postgres-cli:
+    image: postgres:15
+    container_name: cyber_werewolves_postgres_cli
+    command: psql -h postgres -U werewolves -d cyber_werewolves_dev
+    environment:
+      - PGPASSWORD=password
+    profiles:
+      - tools
+    depends_on:
+      - postgres
+
+  # Development monitoring
+  prometheus:
+    profiles:
+      - monitoring
+      - development
+
+  grafana:
+    profiles:
+      - monitoring
+      - development
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  nats_dev_data:
+    driver: local
