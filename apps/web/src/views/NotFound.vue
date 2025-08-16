@@ -3,7 +3,7 @@
     <div class="not-found-content">
       <div class="error-visual">
         <div class="error-code">404</div>
-        <IconFrown class="error-icon" />
+        <IconFaceFrownFill class="error-icon" />
       </div>
       
       <h1 class="error-title">页面未找到</h1>
@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { Button } from '@arco-design/web-vue'
-import { IconFrown, IconHome, IconLeft } from '@arco-design/web-vue/es/icon'
+import { IconFaceFrownFill, IconHome, IconLeft } from '@arco-design/web-vue/es/icon'
 
 const router = useRouter()
 

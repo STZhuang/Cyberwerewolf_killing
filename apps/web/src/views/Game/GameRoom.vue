@@ -172,13 +172,13 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  AButton,
-  AIcon,
-  AAlert,
-  ATextarea,
-  ARadioGroup,
-  ARadio,
-  ASpin,
+  Button as AButton,
+  Icon as AIcon,
+  Alert as AAlert,
+  Textarea as ATextarea,
+  RadioGroup as ARadioGroup,
+  Radio as ARadio,
+  Spin as ASpin,
   Message,
   Modal
 } from '@arco-design/web-vue'

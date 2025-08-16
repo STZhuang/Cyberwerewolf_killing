@@ -128,14 +128,14 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  AForm,
-  AFormItem,
-  AInput,
-  AInputPassword,
-  AButton,
-  AIcon,
-  ACheckbox,
-  AAlert,
+  Form as AForm,
+  FormItem as AFormItem,
+  Input as AInput,
+  InputPassword as AInputPassword,
+  Button as AButton,
+  Icon as AIcon,
+  Checkbox as ACheckbox,
+  Alert as AAlert,
   Message
 } from '@arco-design/web-vue'
 import type { FieldRule } from '@arco-design/web-vue/es/form/interface'
