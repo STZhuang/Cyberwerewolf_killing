@@ -4,8 +4,9 @@
 from app.path_config import *
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, AnyHttpUrl, SecretStr
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Literal
 import uuid
 import hashlib
 import json
@@ -13,14 +14,42 @@ import json
 from app.database import get_db, Provider, Preset, Binding
 from app.config import settings
 from cyber_werewolves.models.llm_config import (
-    CreateProviderRequest,
-    CreatePresetRequest, 
-    CreateBindingRequest,
     ModelResolution,
     Provider as ProviderModel,
     Preset as PresetModel,
     Binding as BindingModel
 )
+
+# Define missing request models
+class CreateProviderRequest(BaseModel):
+    name: str
+    type: Literal["openai", "anthropic", "gemini", "openrouter", "vllm", "custom"]
+    base_url: AnyHttpUrl
+    api_key: SecretStr
+    default_model: str
+    headers: Optional[Dict[str, str]] = None
+    timeout_s: int = 60
+    rate_limit_tpm: Optional[int] = None
+    rate_limit_rpm: Optional[int] = None
+
+class CreatePresetRequest(BaseModel):
+    provider_id: str
+    model_id: str
+    name: str
+    temperature: float = 0.7
+    top_p: float = 1.0
+    max_tokens: int = 2048
+    seed: Optional[int] = None
+    stop: Optional[List[str]] = None
+    modalities: List[Literal["text", "vision", "audio"]] = ["text"]
+    tools_allowed: bool = True
+    vision_max_pixels: Optional[int] = None
+
+class CreateBindingRequest(BaseModel):
+    scope: Literal["global", "room", "seat", "agent_role"]
+    scope_key: str
+    preset_id: str
+    priority: int = 0
 
 router = APIRouter()
 
