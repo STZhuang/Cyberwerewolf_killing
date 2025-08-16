@@ -1,0 +1,17 @@
+[project]
+name = "agents"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "agno>=1.7.11",
+    "anthropic>=0.64.0",
+    "fastapi[standard]>=0.116.1",
+    "google-generativeai>=0.8.5",
+    "httpx>=0.28.1",
+    "openai>=1.99.9",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+    "uvicorn>=0.35.0",
+]

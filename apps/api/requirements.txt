@@ -1,0 +1,19 @@
+fastapi
+uvicorn[standard]
+websockets
+sqlalchemy
+alembic
+psycopg2-binary
+redis
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+python-dotenv
+pytest
+pytest-asyncio
+httpx
+agno
+
+# Local SDK package
+-e ../../packages/sdk-py
