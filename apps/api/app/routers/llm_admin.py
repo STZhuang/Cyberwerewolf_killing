@@ -29,8 +29,7 @@ class LLMConfigResponse(BaseModel):
     base_url: str
     temperature: float
     max_tokens: int
-    timeout: int
-    # 注意：不返回 api_key 以确保安全
+    # 注意：不返回 api_key 和 timeout 以确保安全
 
 class TestConnectionResponse(BaseModel):
     success: bool
@@ -39,25 +38,25 @@ class TestConnectionResponse(BaseModel):
     error: Optional[str] = None
 
 # 内存中存储当前配置（生产环境应该使用数据库）
-_current_config: Optional[LLMConfigRequest] = None
+_current_configs: Dict[str, LLMConfigRequest] = {}
 
-@router.post("/admin/llm/save-config", response_model=Dict[str, str])
-async def save_llm_config(
-    config: LLMConfigRequest,
+@router.post("/admin/llm/save-configs", response_model=Dict[str, str])
+async def save_llm_configs(
+    configs: Dict[str, LLMConfigRequest],
     current_user=Depends(get_current_user)
 ):
-    """保存 LLM 配置"""
-    global _current_config
+    """保存所有角色的 LLM 配置"""
+    global _current_configs
     
     try:
-        # 验证配置
-        if not config.model_id or not config.base_url:
-            raise HTTPException(status_code=400, detail="model_id 和 base_url 是必填项")
+        # 简单的验证
+        for role, config in configs.items():
+            if not config.model_id or not config.base_url:
+                raise HTTPException(status_code=400, detail=f"角色 '{role}' 的 model_id 和 base_url 是必填项")
         
-        # 保存配置到内存（生产环境应该保存到数据库）
-        _current_config = config
+        _current_configs = configs
         
-        logger.info(f"用户 {current_user.username} 保存了新的 LLM 配置: {config.model_id}")
+        logger.info(f"用户 {current_user.username} 保存了新的 LLM 配置")
         
         return {"message": "LLM配置已保存成功"}
         
@@ -65,27 +64,25 @@ async def save_llm_config(
         logger.error(f"保存 LLM 配置失败: {e}")
         raise HTTPException(status_code=500, detail=f"保存失败: {str(e)}")
 
-@router.get("/admin/llm/get-config", response_model=LLMConfigResponse)
-async def get_llm_config(current_user=Depends(get_current_user)):
-    """获取当前 LLM 配置"""
+@router.get("/admin/llm/get-configs", response_model=Dict[str, LLMConfigResponse])
+async def get_llm_configs(current_user=Depends(get_current_user)):
+    """获取所有角色的当前 LLM 配置"""
     
-    if not _current_config:
-        # 返回默认配置
-        return LLMConfigResponse(
-            model_id="gpt-4o-mini",
-            base_url="https://api.openai.com/v1",
-            temperature=0.7,
-            max_tokens=2048,
-            timeout=30
+    if not _current_configs:
+        # 如果没有配置，可以返回一个空字典或默认值
+        return {}
+
+    # 转换成不带 api_key 的响应模型
+    response_configs = {}
+    for role, config in _current_configs.items():
+        response_configs[role] = LLMConfigResponse(
+            model_id=config.model_id,
+            base_url=config.base_url,
+            temperature=config.temperature,
+            max_tokens=config.max_tokens
         )
-    
-    return LLMConfigResponse(
-        model_id=_current_config.model_id,
-        base_url=_current_config.base_url,
-        temperature=_current_config.temperature or 0.7,
-        max_tokens=_current_config.max_tokens or 2048,
-        timeout=_current_config.timeout or 30
-    )
+
+    return response_configs
 
 @router.post("/admin/llm/test-config", response_model=TestConnectionResponse)
 async def test_llm_config(
@@ -169,7 +166,3 @@ async def _test_llm_connection(config: LLMConfigRequest) -> tuple[bool, Optional
             return False, "认证失败，请检查API Key"
         else:
             return False, f"连接失败: {error_msg}"
-
-def get_current_llm_config() -> Optional[LLMConfigRequest]:
-    """获取当前的 LLM 配置供其他模块使用"""
-    return _current_config

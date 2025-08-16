@@ -1,23 +1,12 @@
 """Werewolf player agent"""
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
-from agno.models.anthropic import Claude
-
 from tools.game_tools import say, vote, night_action, ask_gm_for_clarification
 from config import settings
 
-def create_werewolf_agent(model_provider: str = "openai") -> Agent:
+
+def create_werewolf_agent(model) -> Agent:
     """创建狼人角色Agent"""
-    
-    # Select model based on provider
-    if model_provider == "openai":
-        model = OpenAIChat(id="gpt-4o-mini")
-    elif model_provider == "anthropic":
-        model = Claude(id="claude-3-haiku")
-    else:
-        model = OpenAIChat(id="gpt-4o-mini")  # Default fallback
-    
     instructions = """你是一名狼人玩家。你的目标是消灭所有村民阵营的玩家。
 
 **关键行为准则：**
