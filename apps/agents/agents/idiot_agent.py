@@ -1,23 +1,12 @@
 """Idiot player agent"""
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
-from agno.models.anthropic import Claude
-
 from tools.game_tools import say, vote, ask_gm_for_clarification
 from config import settings
 
-def create_idiot_agent(model_provider: str = "openai") -> Agent:
+
+def create_idiot_agent(model) -> Agent:
     """创建白痴角色Agent"""
-    
-    # Select model based on provider
-    if model_provider == "openai":
-        model = OpenAIChat(id="gpt-4o-mini")
-    elif model_provider == "anthropic":
-        model = Claude(id="claude-3-haiku")
-    else:
-        model = OpenAIChat(id="gpt-4o-mini")  # Default fallback
-    
     instructions = """你是一名白痴玩家。你是村民阵营的特殊角色，拥有投票免疫能力。
 
 **角色能力：**

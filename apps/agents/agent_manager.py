@@ -6,6 +6,9 @@ import asyncio
 import httpx
 from datetime import datetime
 
+from agno.models.anthropic import Claude
+from agno.models.openai import OpenAIChat
+
 from agents.werewolf_agent import create_werewolf_agent
 from agents.seer_agent import create_seer_agent
 from agents.villager_agent import create_villager_agent
@@ -28,10 +31,9 @@ class AgentManager:
         self.http_client = httpx.AsyncClient(base_url=settings.api_base_url if hasattr(settings, 'api_base_url') else "http://localhost:8000")
     
     def create_agent_for_role(
-        self, 
-        agent_id: str, 
-        role: str, 
-        model_provider: str = "openai",
+        self,
+        agent_id: str,
+        role: str,
         custom_llm_config: Optional[Dict[str, Any]] = None
     ) -> Optional[Any]:
         """为指定角色创建Agent"""
@@ -49,13 +51,8 @@ class AgentManager:
             }
             
             if role in agent_creators:
-                # 如果提供了自定义 LLM 配置，使用它创建 agent
-                if custom_llm_config:
-                    agent = self._create_agent_with_custom_llm(
-                        role, agent_creators[role], custom_llm_config
-                    )
-                else:
-                    agent = agent_creators[role](model_provider)
+                model = self._create_model_from_config(custom_llm_config)
+                agent = agent_creators[role](model)
             else:
                 logger.error(f"Unknown role: {role}")
                 return None
@@ -68,144 +65,47 @@ class AgentManager:
             logger.error(f"Error creating agent for role {role}: {e}")
             return None
     
-    def _create_agent_with_custom_llm(
-        self, 
-        role: str, 
-        agent_creator, 
-        llm_config: Dict[str, Any]
-    ) -> Optional[Any]:
-        """使用自定义 LLM 配置创建 Agent"""
-        
-        try:
-            from agno.models.openai import OpenAIChat
-            from agno.agent import Agent
-            
-            # 创建自定义的 OpenAIChat 实例
-            custom_model = OpenAIChat(
-                id=llm_config.get("model_id", "gpt-4o-mini"),
-                base_url=llm_config.get("base_url", "https://api.openai.com/v1"),
-                api_key=llm_config.get("api_key") if llm_config.get("api_key") else None,
-                temperature=llm_config.get("temperature", 0.7),
-                max_tokens=llm_config.get("max_tokens", 2048)
-            )
-            
-            # 获取角色特定的配置（工具和指令）
-            agent_config = self._get_role_config(role)
-            
-            # 创建 Agent 实例
-            agent = Agent(
-                name=f"{role} Agent",
-                model=custom_model,
-                tools=agent_config["tools"],
-                instructions=agent_config["instructions"],
-                markdown=False,
-                show_tool_calls=False,
-                add_history_to_messages=True
-            )
-            
-            logger.info(f"Created {role} agent with custom LLM: {llm_config['model_id']}")
-            return agent
-            
-        except Exception as e:
-            logger.error(f"Error creating agent with custom LLM: {e}")
-            return None
-    
-    def _get_role_config(self, role: str) -> Dict[str, Any]:
-        """获取角色特定的工具和指令配置"""
-        
-        from tools.game_tools import say, vote, night_action, ask_gm_for_clarification
-        
-        base_tools = [say, vote, ask_gm_for_clarification]
-        
-        # 角色特定的配置
-        role_configs = {
-            "Werewolf": {
-                "tools": base_tools + [night_action],
-                "instructions": """你是狼人阵营的玩家。目标：消灭所有村民阵营玩家。
-                
-**夜间行动：**
-- 与其他狼人协商击杀目标
-- 使用 `night_action('kill', target_seat)` 击杀村民
-                
-**白天策略：**
-- 隐藏身份，伪装成村民
-- 引导村民投票其他玩家
-- 支持对村民有利的提案来获取信任"""
-            },
-            "Seer": {
-                "tools": base_tools + [night_action],
-                "instructions": """你是预言家，村民阵营的重要角色。目标：找出狼人并引导村民获胜。
+    def _create_model_from_config(self, llm_config: Optional[Dict[str, Any]] = None) -> Any:
+        """从配置创建模型实例"""
+        llm_config = llm_config or {}
+        # 从 llm_config 的 provider_config 或 model_config 中获取配置
+        provider_config = llm_config.get("provider", {})
+        model_config = llm_config.get("model_config", {})
 
-**夜间行动：**
-- 使用 `night_action('inspect', target_seat)` 查验玩家身份
-- 优先查验可疑玩家
+        provider = provider_config.get("type", "openai")
+        # 兼容旧版，model_id 可能在 llm_config 或 model_config 中
+        model_id = llm_config.get("model_id") or model_config.get("model_id", "gpt-4o-mini")
 
-**白天策略：**
-- 适时公布查验结果
-- 引导村民投票狼人
-- 保护其他村民角色"""
-            },
-            "Witch": {
-                "tools": base_tools + [night_action],
-                "instructions": """你是女巫，拥有解药和毒药各一瓶。目标：帮助村民阵营获胜。
+        # base_url 和 api_key 优先从 llm_config 中获取，以便于覆盖
+        base_url = llm_config.get("base_url") or provider_config.get("base_url")
+        api_key = llm_config.get("api_key")
 
-**夜间行动：**
-- 使用 `night_action('save', target_seat)` 救人（解药）
-- 使用 `night_action('poison', target_seat)` 毒杀（毒药）
-- 每种药水只能使用一次，同一晚不能同时使用
+        # temperature 和 max_tokens
+        temperature = llm_config.get("temperature") or model_config.get("temperature", 0.7)
+        max_tokens = llm_config.get("max_tokens") or model_config.get("max_tokens", 2048)
 
-**白天策略：**
-- 隐藏身份，避免被狼人针对
-- 根据情况选择性透露信息"""
-            },
-            "Guard": {
-                "tools": base_tools + [night_action],
-                "instructions": """你是守卫，可以保护其他玩家。目标：帮助村民阵营获胜。
+        logger.info(f"Creating model with provider: {provider}, model_id: {model_id}")
 
-**夜间行动：**
-- 使用 `night_action('guard', target_seat)` 守护玩家
-- 不能守护自己
-- 不能连续两晚守护同一玩家
-
-**白天策略：**
-- 保持低调，避免暴露身份
-- 观察并分析可疑行为"""
-            },
-            "Villager": {
-                "tools": base_tools,
-                "instructions": """你是普通村民。目标：通过逻辑推理找出狼人。
-
-**白天策略：**
-- 仔细听取发言，分析逻辑漏洞
-- 支持神职角色的判断
-- 避免跟风投票，要有自己的理由"""
-            },
-            "Hunter": {
-                "tools": base_tools,
-                "instructions": """你是猎人，死亡时可以开枪带走一名玩家。目标：帮助村民阵营获胜。
-
-**白天策略：**
-- 保持低调，避免被狼人针对
-- 准备好开枪目标（系统会在你死亡时处理）"""
-            },
-            "Idiot": {
-                "tools": base_tools,
-                "instructions": """你是白痴，被投票出局时会翻牌但不死亡，失去投票权但保留发言权。
-
-**白天策略：**
-- 可以相对激进地发言
-- 身份暴露后继续帮助村民分析"""
-            }
+        model_params = {
+            "id": model_id,
+            "base_url": base_url,
+            "api_key": api_key,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
         }
         
-        return role_configs.get(role, {
-            "tools": base_tools,
-            "instructions": f"你是 {role} 角色，请根据游戏规则行动。"
-        })
-    
+        # 移除值为 None 的参数
+        model_params = {k: v for k, v in model_params.items() if v is not None}
+
+        if provider == "anthropic":
+            return Claude(**model_params)
+
+        # 默认为 openai
+        return OpenAIChat(**model_params)
+
     async def create_agent_with_dynamic_config(
-        self, 
-        agent_id: str, 
+        self,
+        agent_id: str,
         role: str,
         room_id: Optional[str] = None,
         seat: Optional[int] = None
@@ -220,39 +120,20 @@ class AgentManager:
                 role=role
             )
             
-            # Get the appropriate agent creator
-            agent_creators = {
-                "Werewolf": create_werewolf_agent,
-                "Seer": create_seer_agent,
-                "Villager": create_villager_agent,
-                "Witch": create_witch_agent,
-                "Guard": create_guard_agent,
-                "Hunter": create_hunter_agent,
-                "Idiot": create_idiot_agent
-            }
-            
-            if role not in agent_creators:
-                logger.error(f"Unknown role: {role}")
-                return None
-            
-            # Determine model provider from configuration
-            provider_type = model_config.get("provider", {}).get("type", "openai")
-            
             # Create agent with resolved provider
-            agent = agent_creators[role](provider_type)
+            agent = self.create_agent_for_role(agent_id, role, custom_llm_config=model_config)
             
             # Store configuration for later reference
             if hasattr(agent, 'model_config'):
                 agent.model_config = model_config
             
-            self.agents[agent_id] = agent
             logger.info(f"Created {role} agent {agent_id} with dynamic config: {model_config.get('model_config', {}).get('model_id', 'unknown')}")
             return agent
             
         except Exception as e:
             logger.error(f"Failed to create agent with dynamic config, falling back to default: {e}")
             # Fallback to regular creation
-            return self.create_agent_for_role(agent_id, role, "openai")
+            return self.create_agent_for_role(agent_id, role)
     
     async def _resolve_model_config(
         self,
@@ -291,12 +172,20 @@ class AgentManager:
                 }
             }
     
-    def create_gm_agent(self, game_id: str, model_provider: str = "openai") -> Optional[Any]:
+    def create_gm_agent(self, game_id: str, custom_llm_config: Optional[Dict[str, Any]] = None) -> Optional[Any]:
         """创建GM Agent"""
         
         try:
             gm_agent_id = f"gm_{game_id}"
-            agent = create_gm_agent(model_provider)
+
+            # 使用与角色 Agent 相同的逻辑创建模型
+            model_config = custom_llm_config or {}
+            if not model_config.get("model_id") and not model_config.get("model_config", {}).get("model_id"):
+                 # 为 GM 使用更强大的模型
+                 model_config.setdefault("model_config", {})["model_id"] = "gpt-4o"
+
+            model = self._create_model_from_config(model_config)
+            agent = create_gm_agent(model)
             
             self.agents[gm_agent_id] = agent
             self.gm_agents[game_id] = gm_agent_id

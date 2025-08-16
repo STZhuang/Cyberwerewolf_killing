@@ -1,22 +1,11 @@
 """Game Master agent"""
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
-from agno.models.anthropic import Claude
-
 from config import settings
 
-def create_gm_agent(model_provider: str = "openai") -> Agent:
+
+def create_gm_agent(model) -> Agent:
     """创建GM Agent"""
-    
-    # Select model based on provider
-    if model_provider == "openai":
-        model = OpenAIChat(id="gpt-4o")  # Use more capable model for GM
-    elif model_provider == "anthropic":
-        model = Claude(id="claude-3-sonnet")
-    else:
-        model = OpenAIChat(id="gpt-4o")
-    
     instructions = """你是赛博狼人杀游戏的Game Master (GM)。你的职责是确保游戏公平进行，解答规则问题，管理游戏流程。
 
 **主要职责：**
