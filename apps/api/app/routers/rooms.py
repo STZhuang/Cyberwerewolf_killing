@@ -336,7 +336,7 @@ async def start_game(
     
     # Create and start game using game service
     from app.game.game_service import GameService
-    from app.main import manager  # Get the WebSocket manager instance
+    from app.websocket_manager import manager  # Get the WebSocket manager instance
     
     game_service = GameService(db, manager)
     manager.game_service = game_service  # Set reference

@@ -311,3 +311,7 @@ class ConnectionManager:
                 },
                 "timestamp": int(datetime.now().timestamp() * 1000)
             })
+
+
+# Global manager instance
+manager = ConnectionManager()

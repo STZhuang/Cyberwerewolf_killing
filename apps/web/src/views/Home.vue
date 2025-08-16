@@ -10,25 +10,25 @@
         </p>
         
         <div class="hero-actions">
-          <AButton 
+          <Button 
             v-if="!authStore.isLoggedIn" 
             type="primary" 
             size="large"
             @click="router.push('/auth/login')"
           >
             开始游戏
-          </AButton>
-          <AButton 
+          </Button>
+          <Button 
             v-else 
             type="primary" 
             size="large"
             @click="router.push('/rooms')"
           >
             进入游戏
-          </AButton>
-          <AButton size="large" @click="scrollToFeatures">
+          </Button>
+          <Button size="large" @click="scrollToFeatures">
             了解更多
-          </AButton>
+          </Button>
         </div>
       </div>
       
@@ -36,7 +36,7 @@
         <div class="game-preview">
           <!-- Placeholder for game screenshot or animation -->
           <div class="preview-placeholder">
-            <AIcon icon="icon-gamepad" class="preview-icon" />
+            <IconExperiment class="preview-icon" />
           </div>
         </div>
       </div>
@@ -50,7 +50,7 @@
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon">
-              <AIcon icon="icon-robot" />
+              <IconRobot />
             </div>
             <h3 class="feature-title">AI智能体</h3>
             <p class="feature-description">
@@ -60,7 +60,7 @@
           
           <div class="feature-card">
             <div class="feature-icon">
-              <AIcon icon="icon-message" />
+              <IconMessage />
             </div>
             <h3 class="feature-title">实时通讯</h3>
             <p class="feature-description">
@@ -70,7 +70,7 @@
           
           <div class="feature-card">
             <div class="feature-icon">
-              <AIcon icon="icon-timeline" />
+              <IconHistory />
             </div>
             <h3 class="feature-title">时间线UI</h3>
             <p class="feature-description">
@@ -80,7 +80,7 @@
           
           <div class="feature-card">
             <div class="feature-icon">
-              <AIcon icon="icon-settings" />
+              <IconSettings />
             </div>
             <h3 class="feature-title">灵活配置</h3>
             <p class="feature-description">
@@ -127,40 +127,40 @@
           <div class="footer-links">
             <div class="link-group">
               <h4>游戏</h4>
-              <AButton type="text" size="small" @click="router.push('/rooms')">
+              <Button type="text" size="small" @click="router.push('/rooms')">
                 房间列表
-              </AButton>
-              <AButton type="text" size="small" @click="router.push('/rooms/create')">
+              </Button>
+              <Button type="text" size="small" @click="router.push('/rooms/create')">
                 创建房间
-              </AButton>
+              </Button>
             </div>
             
             <div class="link-group">
               <h4>账户</h4>
-              <AButton 
+              <Button 
                 v-if="!authStore.isLoggedIn"
                 type="text" 
                 size="small" 
                 @click="router.push('/auth/login')"
               >
                 登录
-              </AButton>
-              <AButton 
+              </Button>
+              <Button 
                 v-if="!authStore.isLoggedIn"
                 type="text" 
                 size="small" 
                 @click="router.push('/auth/register')"
               >
                 注册
-              </AButton>
-              <AButton 
+              </Button>
+              <Button 
                 v-if="authStore.isLoggedIn"
                 type="text" 
                 size="small" 
                 @click="router.push('/profile')"
               >
                 个人中心
-              </AButton>
+              </Button>
             </div>
           </div>
         </div>
@@ -176,7 +176,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { AButton, AIcon } from '@arco-design/web-vue'
+import { Button } from '@arco-design/web-vue'
+import { 
+  IconExperiment,
+  IconRobot, 
+  IconMessage,
+  IconHistory,
+  IconSettings 
+} from '@arco-design/web-vue/es/icon'
 import { useAuthStore } from '@/stores'
 
 const router = useRouter()

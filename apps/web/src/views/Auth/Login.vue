@@ -7,7 +7,7 @@
           <p class="auth-subtitle">欢迎回到 Cyber Werewolves</p>
         </div>
 
-        <AForm
+        <Form
           ref="formRef"
           :model="form"
           :rules="rules"
@@ -15,39 +15,39 @@
           @submit="handleSubmit"
           :disabled="authStore.isLoading"
         >
-          <AFormItem label="用户名" field="username" required>
-            <AInput
+          <FormItem label="用户名" field="username" required>
+            <Input
               v-model="form.username"
               placeholder="请输入用户名"
               size="large"
               allow-clear
             >
               <template #prefix>
-                <AIcon icon="icon-user" />
+                <IconUser />
               </template>
-            </AInput>
-          </AFormItem>
+            </Input>
+          </FormItem>
 
-          <AFormItem label="密码" field="password" required>
-            <AInputPassword
+          <FormItem label="密码" field="password" required>
+            <InputPassword
               v-model="form.password"
               placeholder="请输入密码"
               size="large"
               allow-clear
             >
               <template #prefix>
-                <AIcon icon="icon-lock" />
+                <IconLock />
               </template>
-            </AInputPassword>
-          </AFormItem>
+            </InputPassword>
+          </FormItem>
 
           <div class="auth-options">
-            <ACheckbox v-model="rememberMe">记住我</ACheckbox>
-            <AButton type="text" size="small">忘记密码？</AButton>
+            <Checkbox v-model="rememberMe">记住我</Checkbox>
+            <Button type="text" size="small">忘记密码？</Button>
           </div>
 
           <!-- Error display -->
-          <AAlert
+          <Alert
             v-if="authStore.error"
             type="error"
             :title="authStore.error"
@@ -57,8 +57,8 @@
             class="auth-error"
           />
 
-          <AFormItem>
-            <AButton
+          <FormItem>
+            <Button
               type="primary"
               html-type="submit"
               size="large"
@@ -66,15 +66,15 @@
               :loading="authStore.isLoading"
             >
               登录
-            </AButton>
-          </AFormItem>
-        </AForm>
+            </Button>
+          </FormItem>
+        </Form>
 
         <div class="auth-footer">
           <p>还没有账户？
-            <AButton type="text" @click="router.push('/auth/register')">
+            <Button type="text" @click="router.push('/auth/register')">
               立即注册
-            </AButton>
+            </Button>
           </p>
         </div>
       </div>
@@ -84,7 +84,7 @@
         <h3>快速体验</h3>
         <p class="quick-login-desc">使用演示账户快速体验游戏</p>
         <div class="demo-accounts">
-          <AButton
+          <Button
             v-for="account in demoAccounts"
             :key="account.username"
             type="outline"
@@ -93,7 +93,7 @@
             class="demo-account-btn"
           >
             {{ account.displayName }}
-          </AButton>
+          </Button>
         </div>
       </div>
     </div>
@@ -104,16 +104,16 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  AForm,
-  AFormItem,
-  AInput,
-  AInputPassword,
-  AButton,
-  AIcon,
-  ACheckbox,
-  AAlert,
+  Form,
+  FormItem,
+  Input,
+  InputPassword,
+  Button,
+  Checkbox,
+  Alert,
   Message
 } from '@arco-design/web-vue'
+import { IconUser, IconLock } from '@arco-design/web-vue/es/icon'
 import type { FieldRule } from '@arco-design/web-vue/es/form/interface'
 import { useAuthStore } from '@/stores'
 

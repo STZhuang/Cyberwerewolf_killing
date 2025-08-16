@@ -5,11 +5,11 @@
       <!-- Vote actions -->
       <div v-if="voteActions.length > 0" class="action-group vote-group">
         <h3 class="group-title">
-          <AIcon icon="icon-thumb-up" />
+          <IconThumbUp />
           投票
         </h3>
         <div class="action-buttons">
-          <AButton
+          <Button
             v-for="action in voteActions"
             :key="action.id"
             :type="action.enabled ? 'primary' : 'secondary'"
@@ -18,16 +18,16 @@
             class="action-button vote-button"
             @click="handleActionClick(action)"
           >
-            <AIcon icon="icon-user" />
+            <IconUser />
             {{ action.label }}
-          </AButton>
+          </Button>
         </div>
         
         <!-- Player selection for voting -->
         <div v-if="showPlayerSelection" class="player-selection">
           <h4 class="selection-title">选择投票目标</h4>
           <div class="player-grid">
-            <AButton
+            <Button
               v-for="player in selectablePlayers"
               :key="player.seat"
               :type="selectedTarget === player.seat ? 'primary' : 'outline'"
@@ -40,10 +40,10 @@
                 <span class="player-name">{{ player.name }}</span>
                 <span v-if="!player.is_alive" class="dead-indicator">💀</span>
               </div>
-            </AButton>
+            </Button>
             
             <!-- Abstain option -->
-            <AButton
+            <Button
               type="outline"
               :disabled="disabled"
               class="player-button abstain-button"
@@ -52,18 +52,18 @@
               <div class="player-info">
                 <span class="abstain-text">弃票</span>
               </div>
-            </AButton>
+            </Button>
           </div>
           
           <div class="selection-actions">
-            <AButton
+            <Button
               type="primary"
               :disabled="!canConfirmSelection || disabled"
               @click="confirmVote"
             >
               确认投票
-            </AButton>
-            <AButton type="text" @click="cancelSelection">取消</AButton>
+            </Button>
+            <Button type="text" @click="cancelSelection">取消</Button>
           </div>
         </div>
       </div>
@@ -71,11 +71,11 @@
       <!-- Night actions -->
       <div v-if="nightActions.length > 0" class="action-group night-group">
         <h3 class="group-title">
-          <AIcon icon="icon-moon" />
+          <IconMoon />
           夜间行动
         </h3>
         <div class="action-buttons">
-          <AButton
+          <Button
             v-for="action in nightActions"
             :key="action.id"
             :type="action.enabled ? 'primary' : 'secondary'"
@@ -84,20 +84,20 @@
             class="action-button night-button"
             @click="handleActionClick(action)"
           >
-            <AIcon :icon="getActionIcon(action.type)" />
+            <component :is="getActionIcon(action.type)" />
             {{ action.label }}
-          </AButton>
+          </Button>
         </div>
       </div>
 
       <!-- Special actions -->
       <div v-if="specialActions.length > 0" class="action-group special-group">
         <h3 class="group-title">
-          <AIcon icon="icon-magic-wand" />
+          <IconMore />
           特殊能力
         </h3>
         <div class="action-buttons">
-          <AButton
+          <Button
             v-for="action in specialActions"
             :key="action.id"
             :type="action.enabled ? 'primary' : 'secondary'"
@@ -106,24 +106,24 @@
             class="action-button special-button"
             @click="handleActionClick(action)"
           >
-            <AIcon :icon="getActionIcon(action.type)" />
+            <component :is="getActionIcon(action.type)" />
             {{ action.label }}
             <span v-if="action.description" class="action-description">
               {{ action.description }}
             </span>
-          </AButton>
+          </Button>
         </div>
       </div>
     </div>
 
     <!-- No actions available -->
     <div v-else class="no-actions">
-      <AIcon icon="icon-clock-circle" class="no-actions-icon" />
+      <IconClockCircle class="no-actions-icon" />
       <p class="no-actions-text">{{ getNoActionsMessage() }}</p>
     </div>
 
     <!-- Action confirmation modal -->
-    <AModal
+    <Modal
       v-model:visible="showConfirmModal"
       title="确认操作"
       :ok-text="confirmAction?.label || '确认'"
@@ -137,13 +137,24 @@
           目标：{{ getPlayerName(selectedTarget) }}
         </span>
       </p>
-    </AModal>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { AButton, AIcon, AModal, Message } from '@arco-design/web-vue'
+import { Button, Modal, Message } from '@arco-design/web-vue'
+import { 
+  IconThumbUp, 
+  IconUser, 
+  IconMoon, 
+  IconClockCircle,
+  IconEye,
+  IconShield,
+  IconFire,
+  IconHeart,
+  IconMore
+} from '@arco-design/web-vue/es/icon'
 import type { ActionPanelProps, GameAction, Player } from '@/types'
 import { useGameStore } from '@/stores'
 
@@ -265,20 +276,20 @@ function resetActionState(): void {
   pendingAction.value = null
 }
 
-function getActionIcon(type: string): string {
-  const iconMap: Record<string, string> = {
-    vote: 'icon-thumb-up',
-    night_action: 'icon-moon',
-    special: 'icon-magic-wand',
-    seer_check: 'icon-eye',
-    guard_protect: 'icon-shield',
-    witch_poison: 'icon-fire',
-    witch_heal: 'icon-heart',
-    werewolf_kill: 'icon-sword',
-    hunter_shoot: 'icon-target'
+function getActionIcon(type: string): any {
+  const iconMap: Record<string, any> = {
+    vote: IconThumbUp,
+    night_action: IconMoon,
+    special: IconMore,
+    seer_check: IconEye,
+    guard_protect: IconShield,
+    witch_poison: IconFire,
+    witch_heal: IconHeart,
+    werewolf_kill: IconMore, // Fallback since sword doesn't exist
+    hunter_shoot: IconMore // Fallback since target doesn't exist
   }
   
-  return iconMap[type] || 'icon-more'
+  return iconMap[type] || IconMore
 }
 
 function getPlayerName(seat: number | null): string {

@@ -38,20 +38,20 @@
 
       <!-- Loading indicator -->
       <div v-if="isLoadingMore" class="loading-indicator">
-        <ASpin size="small" />
+        <Spin size="small" />
         <span>加载更多消息...</span>
       </div>
 
       <!-- Empty state -->
       <div v-else-if="messages.length === 0" class="empty-state">
-        <AIcon icon="icon-message" class="empty-icon" />
+        <IconMessage class="empty-icon" />
         <p class="empty-text">还没有消息，开始聊天吧！</p>
       </div>
     </div>
 
     <!-- Scroll to bottom button -->
     <Transition name="fade">
-      <AButton
+      <Button
         v-if="showScrollToBottom"
         class="scroll-to-bottom"
         type="primary"
@@ -60,14 +60,14 @@
         @click="scrollToBottom"
         :aria-label="unreadCount > 0 ? `有 ${unreadCount} 条新消息，滚动到底部` : '滚动到底部'"
       >
-        <AIcon icon="icon-down" />
-        <ABadge
+        <IconDown />
+        <Badge
           v-if="unreadCount > 0"
           :count="unreadCount"
           :max-count="99"
           class="unread-badge"
         />
-      </AButton>
+      </Button>
     </Transition>
   </div>
 </template>
@@ -75,7 +75,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useVirtualList } from '@vueuse/core'
-import { AButton, AIcon, ASpin, ABadge } from '@arco-design/web-vue'
+import { Button, Spin, Badge } from '@arco-design/web-vue'
+import { IconMessage, IconDown } from '@arco-design/web-vue/es/icon'
 import MessageBubble from './MessageBubble.vue'
 import type { MessageBubbleProps } from '@/types'
 import { useGameStore } from '@/stores'

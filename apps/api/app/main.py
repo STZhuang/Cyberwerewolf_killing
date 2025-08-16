@@ -11,7 +11,7 @@ from app.config import settings
 from app.database import get_db, Base, engine
 from app.routers import auth, rooms, admin, llm_config
 from app.routers import game_actions, agent_tools, llm_admin
-from app.websocket_manager import ConnectionManager
+from app.websocket_manager import manager
 
 # Configure logging
 logging.basicConfig(level=getattr(logging, settings.log_level))
@@ -37,8 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# WebSocket connection manager
-manager = ConnectionManager()
+# WebSocket connection manager is imported from websocket_manager module
 
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["authentication"])

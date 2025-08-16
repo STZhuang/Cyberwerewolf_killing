@@ -3,7 +3,7 @@
     <div class="phase-content">
       <!-- Phase icon -->
       <div class="phase-icon">
-        <AIcon :icon="phaseIcon" />
+        <component :is="phaseIcon" />
       </div>
 
       <!-- Phase info -->
@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { AIcon } from '@arco-design/web-vue'
+import { IconMoon, IconSun, IconThumbUp, IconTrophy } from '@arco-design/web-vue/es/icon'
 import type { PhaseBannerProps, Phase } from '@/types'
 
 const props = defineProps<PhaseBannerProps>()
@@ -71,12 +71,12 @@ const phaseDurations: Record<Phase, number> = {
   Result: 60, // 1 minute
 }
 
-const phaseIcons: Record<Phase, string> = {
-  Night: 'icon-moon',
-  DayTalk: 'icon-sun',
-  Vote: 'icon-thumb-up',
-  Trial: 'icon-gavel',
-  Result: 'icon-trophy'
+const phaseIcons: Record<Phase, any> = {
+  Night: IconMoon,
+  DayTalk: IconSun,
+  Vote: IconThumbUp,
+  Trial: IconThumbUp, // Using thumb up for trial as well since gavel doesn't exist
+  Result: IconTrophy
 }
 
 const phaseColors: Record<Phase, string> = {

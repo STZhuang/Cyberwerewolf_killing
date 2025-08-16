@@ -9,7 +9,7 @@ import logging
 
 from app.database import get_db, Game, GamePlayer
 from app.routers.auth import get_current_user
-from app.main import manager
+from app.websocket_manager import manager
 
 logger = logging.getLogger(__name__)
 

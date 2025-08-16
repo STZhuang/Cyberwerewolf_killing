@@ -7,7 +7,7 @@
       </div>
 
       <div class="create-form">
-        <AForm
+        <Form
           ref="formRef"
           :model="form"
           :rules="rules"
@@ -18,18 +18,18 @@
           <div class="form-section">
             <h3 class="section-title">基本设置</h3>
             
-            <AFormItem label="房间名称" field="name" required>
-              <AInput
+            <FormItem label="房间名称" field="name" required>
+              <Input
                 v-model="form.name"
                 placeholder="请输入房间名称"
                 allow-clear
                 :max-length="30"
                 show-word-limit
               />
-            </AFormItem>
+            </FormItem>
 
-            <AFormItem label="最大玩家数" field="max_players" required>
-              <AInputNumber
+            <FormItem label="最大玩家数" field="max_players" required>
+              <InputNumber
                 v-model="form.max_players"
                 :min="6"
                 :max="20"
@@ -39,7 +39,7 @@
               <template #help>
                 建议6-12人，支持最多20人同时游戏
               </template>
-            </AFormItem>
+            </FormItem>
           </div>
 
           <!-- Role configuration -->
@@ -47,63 +47,63 @@
             <h3 class="section-title">角色配置</h3>
             
             <div class="role-grid">
-              <AFormItem label="狼人" field="settings.werewolf_count" required>
-                <AInputNumber
+              <FormItem label="狼人" field="settings.werewolf_count" required>
+                <InputNumber
                   v-model="form.settings.werewolf_count"
                   :min="1"
                   :max="5"
                   :step="1"
                 />
-              </AFormItem>
+              </FormItem>
 
-              <AFormItem label="村民" field="settings.villager_count" required>
-                <AInputNumber
+              <FormItem label="村民" field="settings.villager_count" required>
+                <InputNumber
                   v-model="form.settings.villager_count"
                   :min="1"
                   :max="10"
                   :step="1"
                 />
-              </AFormItem>
+              </FormItem>
 
-              <AFormItem label="预言家" field="settings.seer_count">
-                <AInputNumber
+              <FormItem label="预言家" field="settings.seer_count">
+                <InputNumber
                   v-model="form.settings.seer_count"
                   :min="0"
                   :max="2"
                   :step="1"
                 />
-              </AFormItem>
+              </FormItem>
 
-              <AFormItem label="守卫" field="settings.guard_count">
-                <AInputNumber
+              <FormItem label="守卫" field="settings.guard_count">
+                <InputNumber
                   v-model="form.settings.guard_count"
                   :min="0"
                   :max="2"
                   :step="1"
                 />
-              </AFormItem>
+              </FormItem>
 
-              <AFormItem label="女巫" field="settings.witch_count">
-                <AInputNumber
+              <FormItem label="女巫" field="settings.witch_count">
+                <InputNumber
                   v-model="form.settings.witch_count"
                   :min="0"
                   :max="1"
                   :step="1"
                 />
-              </AFormItem>
+              </FormItem>
 
-              <AFormItem label="猎人" field="settings.hunter_count">
-                <AInputNumber
+              <FormItem label="猎人" field="settings.hunter_count">
+                <InputNumber
                   v-model="form.settings.hunter_count"
                   :min="0"
                   :max="1"
                   :step="1"
                 />
-              </AFormItem>
+              </FormItem>
             </div>
 
             <div class="role-summary">
-              <AAlert
+              <Alert
                 :type="roleValidation.valid ? 'success' : 'warning'"
                 :title="roleValidation.message"
                 show-icon
@@ -116,35 +116,35 @@
             <h3 class="section-title">时间设置</h3>
             
             <div class="time-grid">
-              <AFormItem label="白天讨论时间" field="settings.day_duration">
-                <AInputNumber
+              <FormItem label="白天讨论时间" field="settings.day_duration">
+                <InputNumber
                   v-model="form.settings.day_duration"
                   :min="60"
                   :max="600"
                   :step="30"
                 />
                 <template #suffix>秒</template>
-              </AFormItem>
+              </FormItem>
 
-              <AFormItem label="夜晚时间" field="settings.night_duration">
-                <AInputNumber
+              <FormItem label="夜晚时间" field="settings.night_duration">
+                <InputNumber
                   v-model="form.settings.night_duration"
                   :min="30"
                   :max="300"
                   :step="15"
                 />
                 <template #suffix>秒</template>
-              </AFormItem>
+              </FormItem>
 
-              <AFormItem label="投票时间" field="settings.vote_duration">
-                <AInputNumber
+              <FormItem label="投票时间" field="settings.vote_duration">
+                <InputNumber
                   v-model="form.settings.vote_duration"
                   :min="30"
                   :max="300"
                   :step="15"
                 />
                 <template #suffix>秒</template>
-              </AFormItem>
+              </FormItem>
             </div>
           </div>
 
@@ -152,39 +152,39 @@
           <div class="form-section">
             <h3 class="section-title">AI设置</h3>
             
-            <AFormItem label="启用AI智能体" field="settings.enable_agent">
-              <ASwitch v-model="form.settings.enable_agent" />
+            <FormItem label="启用AI智能体" field="settings.enable_agent">
+              <Switch v-model="form.settings.enable_agent" />
               <template #help>
                 AI智能体将自动填补空缺位置，提供更好的游戏体验
               </template>
-            </AFormItem>
+            </FormItem>
 
-            <AFormItem 
+            <FormItem 
               v-if="form.settings.enable_agent" 
               label="AI难度" 
               field="settings.agent_difficulty"
             >
-              <ARadioGroup v-model="form.settings.agent_difficulty">
-                <ARadio value="easy">简单</ARadio>
-                <ARadio value="medium">中等</ARadio>
-                <ARadio value="hard">困难</ARadio>
-              </ARadioGroup>
-            </AFormItem>
+              <RadioGroup v-model="form.settings.agent_difficulty">
+                <Radio value="easy">简单</Radio>
+                <Radio value="medium">中等</Radio>
+                <Radio value="hard">困难</Radio>
+              </RadioGroup>
+            </FormItem>
           </div>
 
           <!-- Submit buttons -->
           <div class="form-actions">
-            <AButton @click="router.push('/rooms')">取消</AButton>
-            <AButton 
+            <Button @click="router.push('/rooms')">取消</Button>
+            <Button 
               type="primary" 
               html-type="submit"
               :loading="isCreating"
               :disabled="!roleValidation.valid"
             >
               创建房间
-            </AButton>
+            </Button>
           </div>
-        </AForm>
+        </Form>
       </div>
     </div>
   </div>
@@ -194,15 +194,15 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  AForm,
-  AFormItem,
-  AInput,
-  AInputNumber,
-  AButton,
-  ASwitch,
-  ARadioGroup,
-  ARadio,
-  AAlert,
+  Form,
+  FormItem,
+  Input,
+  InputNumber,
+  Button,
+  Switch,
+  RadioGroup,
+  Radio,
+  Alert,
   Message
 } from '@arco-design/web-vue'
 import type { FieldRule } from '@arco-design/web-vue/es/form/interface'

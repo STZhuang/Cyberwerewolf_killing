@@ -5,6 +5,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime, timedelta
+from typing import Optional
 from jose import JWTError, jwt
 import uuid
 
@@ -24,7 +25,7 @@ class LoginResponse(BaseModel):
 class UserResponse(BaseModel):
     id: str
     username: str
-    avatar_url: str = None
+    avatar_url: Optional[str] = None
     created_at: datetime
     banned: bool
 
@@ -116,3 +117,8 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
         created_at=current_user.created_at,
         banned=current_user.banned
     )
+
+@router.post("/logout")
+async def logout(current_user: User = Depends(get_current_user)):
+    """Logout user - for now just return success (JWT is stateless)"""
+    return {"message": "Successfully logged out"}

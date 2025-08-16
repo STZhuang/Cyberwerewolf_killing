@@ -7,32 +7,32 @@
         <p class="page-subtitle">选择或创建一个房间开始游戏</p>
       </div>
       <div class="header-actions">
-        <AButton type="primary" @click="router.push('/rooms/create')">
-          <AIcon icon="icon-plus" />
+        <Button type="primary" @click="router.push('/rooms/create')">
+          <IconPlus />
           创建房间
-        </AButton>
-        <AButton @click="refreshRooms" :loading="isLoading">
-          <AIcon icon="icon-refresh" />
+        </Button>
+        <Button @click="refreshRooms" :loading="isLoading">
+          <IconRefresh />
           刷新
-        </AButton>
+        </Button>
       </div>
     </div>
 
     <!-- Filters -->
     <div class="filters">
       <div class="filter-group">
-        <ASelect
+        <Select
           v-model="statusFilter"
           placeholder="房间状态"
           allow-clear
           style="width: 150px"
         >
-          <AOption value="waiting">等待中</AOption>
-          <AOption value="playing">游戏中</AOption>
-          <AOption value="finished">已结束</AOption>
-        </ASelect>
+          <Option value="waiting">等待中</Option>
+          <Option value="playing">游戏中</Option>
+          <Option value="finished">已结束</Option>
+        </Select>
         
-        <AInputSearch
+        <InputSearch
           v-model="searchQuery"
           placeholder="搜索房间名称"
           style="width: 200px"
@@ -45,20 +45,20 @@
     <div class="room-list">
       <!-- Loading state -->
       <div v-if="isLoading && rooms.length === 0" class="loading-state">
-        <ASpin size="large" />
+        <Spin size="large" />
         <p>加载房间中...</p>
       </div>
 
       <!-- Empty state -->
       <div v-else-if="filteredRooms.length === 0" class="empty-state">
-        <AIcon icon="icon-apps" class="empty-icon" />
+        <IconApps class="empty-icon" />
         <h3 class="empty-title">暂无房间</h3>
         <p class="empty-description">
           {{ searchQuery || statusFilter ? '没有找到匹配的房间' : '还没有房间，创建一个开始游戏吧' }}
         </p>
-        <AButton type="primary" @click="router.push('/rooms/create')">
+        <Button type="primary" @click="router.push('/rooms/create')">
           创建房间
-        </AButton>
+        </Button>
       </div>
 
       <!-- Room cards -->
@@ -68,8 +68,8 @@
           :key="room.id"
           class="room-card"
           :class="{ 
-            'room-joinable': room.status === 'waiting' && room.players.length < room.max_players,
-            'room-full': room.players.length >= room.max_players,
+            'room-joinable': room.status === 'waiting' && (room.players?.length || 0) < room.max_players,
+            'room-full': (room.players?.length || 0) >= room.max_players,
             'room-playing': room.status === 'playing'
           }"
           @click="handleRoomClick(room)"
@@ -84,8 +84,8 @@
             <h3 class="room-name">{{ room.name }}</h3>
             <div class="room-meta">
               <span class="player-count">
-                <AIcon icon="icon-user" />
-                {{ room.players.length }}/{{ room.max_players }}
+                <IconUser />
+                {{ room.players?.length || 0 }}/{{ room.max_players }}
               </span>
               <span class="created-time">
                 {{ formatTime(room.created_at) }}
@@ -96,11 +96,11 @@
           <!-- Game settings preview -->
           <div class="room-settings">
             <div class="setting-item">
-              <AIcon icon="icon-user-group" />
-              <span>{{ getRoleCount(room.settings) }}</span>
+              <IconUserGroup />
+              <span>{{ getRoleCount(room.settings || room.config) }}</span>
             </div>
-            <div class="setting-item" v-if="room.settings.enable_agent">
-              <AIcon icon="icon-robot" />
+            <div class="setting-item" v-if="room.settings?.enable_agent || room.config?.enable_agent">
+              <IconRobot />
               <span>AI智能体</span>
             </div>
           </div>
@@ -109,7 +109,7 @@
           <div class="room-players">
             <div class="players-list">
               <div
-                v-for="(player, index) in room.players.slice(0, 4)"
+                v-for="(player, index) in (room.players || []).slice(0, 4)"
                 :key="player.id"
                 class="player-avatar"
                 :title="player.name"
@@ -117,32 +117,32 @@
                 {{ getPlayerInitials(player.name) }}
                 <span v-if="player.is_agent" class="agent-indicator">🤖</span>
               </div>
-              <div v-if="room.players.length > 4" class="more-players">
-                +{{ room.players.length - 4 }}
+              <div v-if="(room.players?.length || 0) > 4" class="more-players">
+                +{{ (room.players?.length || 0) - 4 }}
               </div>
             </div>
           </div>
 
           <!-- Action button -->
           <div class="room-actions">
-            <AButton
-              v-if="room.status === 'waiting' && room.players.length < room.max_players"
+            <Button
+              v-if="room.status === 'waiting' && (room.players?.length || 0) < room.max_players"
               type="primary"
               @click.stop="joinRoom(room)"
               :loading="joiningRoomId === room.id"
             >
               加入房间
-            </AButton>
-            <AButton
+            </Button>
+            <Button
               v-else-if="room.status === 'playing'"
               type="outline"
               @click.stop="watchRoom(room)"
             >
               观看游戏
-            </AButton>
-            <AButton v-else disabled>
-              {{ room.players.length >= room.max_players ? '房间已满' : '游戏结束' }}
-            </AButton>
+            </Button>
+            <Button v-else disabled>
+              {{ (room.players?.length || 0) >= room.max_players ? '房间已满' : '游戏结束' }}
+            </Button>
           </div>
         </div>
       </div>
@@ -150,7 +150,7 @@
 
     <!-- Pagination -->
     <div v-if="filteredRooms.length > 0" class="pagination">
-      <APagination
+      <Pagination
         v-model:current="currentPage"
         :total="filteredRooms.length"
         :page-size="pageSize"
@@ -166,15 +166,22 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  AButton,
-  AIcon,
-  ASelect,
-  AOption,
-  AInputSearch,
-  ASpin,
-  APagination,
+  Button,
+  Select,
+  Option,
+  InputSearch,
+  Spin,
+  Pagination,
   Message
 } from '@arco-design/web-vue'
+import { 
+  IconPlus, 
+  IconRefresh, 
+  IconApps, 
+  IconUser, 
+  IconUserGroup, 
+  IconRobot 
+} from '@arco-design/web-vue/es/icon'
 import { apiService } from '@/services/api'
 import type { GameRoom, GameSettings } from '@/types'
 
@@ -280,7 +287,7 @@ function watchRoom(room: GameRoom) {
 
 function handleRoomClick(room: GameRoom) {
   // Navigate to room details or join directly based on status
-  if (room.status === 'waiting' && room.players.length < room.max_players) {
+  if (room.status === 'waiting' && (room.players?.length || 0) < room.max_players) {
     joinRoom(room)
   } else {
     router.push(`/room/${room.id}`)
@@ -296,11 +303,18 @@ function getRoomStatusText(status: string): string {
   }
 }
 
-function getRoleCount(settings: GameSettings): string {
-  const total = settings.werewolf_count + settings.villager_count + 
-               settings.seer_count + settings.guard_count + 
-               settings.witch_count + settings.hunter_count
-  return `${total}人局`
+function getRoleCount(settings: GameSettings | undefined): string {
+  if (!settings) return '未配置'
+  
+  const werewolfCount = settings.werewolf_count || 0
+  const villagerCount = settings.villager_count || 0
+  const seerCount = settings.seer_count || 0
+  const guardCount = settings.guard_count || 0
+  const witchCount = settings.witch_count || 0
+  const hunterCount = settings.hunter_count || 0
+  
+  const total = werewolfCount + villagerCount + seerCount + guardCount + witchCount + hunterCount
+  return total > 0 ? `${total}人局` : '未配置'
 }
 
 function getPlayerInitials(name: string): string {

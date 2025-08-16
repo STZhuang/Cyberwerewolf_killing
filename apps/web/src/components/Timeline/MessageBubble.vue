@@ -57,9 +57,9 @@
 
         <!-- Error state -->
         <div v-if="status === 'error'" class="error-state">
-          <AIcon icon="icon-exclamation-circle" class="error-icon" />
+          <IconExclamationCircle class="error-icon" />
           <span class="error-text">Message failed to send</span>
-          <AButton
+          <Button
             v-if="onRetry"
             size="mini"
             type="text"
@@ -67,19 +67,19 @@
             class="retry-button"
           >
             Retry
-          </AButton>
+          </Button>
         </div>
 
         <!-- Retracted state -->
         <div v-if="status === 'retracted'" class="retracted-state">
-          <AIcon icon="icon-info-circle" class="retracted-icon" />
+          <IconInfoCircle class="retracted-icon" />
           <span class="retracted-text">This message was retracted</span>
         </div>
       </div>
 
       <!-- Actions -->
       <div v-if="actions && actions.length > 0" class="message-actions">
-        <AButton
+        <Button
           v-for="action in actions"
           :key="action.label"
           size="mini"
@@ -88,7 +88,7 @@
           class="action-button"
         >
           {{ action.label }}
-        </AButton>
+        </Button>
       </div>
     </div>
   </div>
@@ -96,7 +96,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { AIcon, AButton } from '@arco-design/web-vue'
+import { Button } from '@arco-design/web-vue'
+import { IconExclamationCircle, IconInfoCircle } from '@arco-design/web-vue/es/icon'
 import ContentRenderer from './ContentRenderer.vue'
 import type { MessageBubbleProps } from '@/types'
 import { useAuthStore } from '@/stores'

@@ -15,7 +15,7 @@
 
         <!-- Table block -->
         <div v-else-if="block.type === 'table'" class="table-block">
-          <ATable
+          <Table
             :columns="tableColumns(block)"
             :data="tableData(block)"
             :pagination="false"
@@ -38,14 +38,14 @@
         <div v-else-if="block.type === 'code'" class="code-block">
           <div class="code-header">
             <span class="code-language">{{ block.language || 'text' }}</span>
-            <AButton
+            <Button
               size="mini"
               type="text"
               @click="copyCode(block.code || '')"
               class="copy-button"
             >
-              <AIcon icon="icon-copy" />
-            </AButton>
+              <IconCopy />
+            </Button>
           </div>
           <pre class="code-content"><code :class="`language-${block.language || 'text'}`" v-html="highlightCode(block.code || '', block.language)"></code></pre>
         </div>
@@ -60,7 +60,7 @@
               class="vote-item"
             >
               <span class="voter">#{{ vote.from }}</span>
-              <AIcon icon="icon-arrow-right" class="vote-arrow" />
+              <IconArrowRight class="vote-arrow" />
               <span class="target">
                 {{ vote.to === null ? '弃票' : `#${vote.to}` }}
               </span>
@@ -74,14 +74,14 @@
     <div v-if="content.citations && content.citations.length > 0" class="citations">
       <h5 class="citations-title">引用来源</h5>
       <div class="citations-list">
-        <ATag
+        <Tag
           v-for="citation in content.citations"
           :key="citation.source_id"
           size="mini"
           class="citation-tag"
         >
           {{ citation.label }}
-        </ATag>
+        </Tag>
       </div>
     </div>
   </div>
@@ -89,7 +89,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ATable, AButton, AIcon, ATag, Message } from '@arco-design/web-vue'
+import { Table, Button, Tag, Message } from '@arco-design/web-vue'
+import { IconCopy, IconArrowRight } from '@arco-design/web-vue/es/icon'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import type { MessageContent, ContentBlock, StreamingText } from '@/types'

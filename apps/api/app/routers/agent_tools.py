@@ -9,7 +9,7 @@ import logging
 from app.database import get_db
 from app.agent.tools_service import AgentToolsService
 from app.game.game_service import GameService
-from app.main import manager
+from app.websocket_manager import manager
 
 logger = logging.getLogger(__name__)
 

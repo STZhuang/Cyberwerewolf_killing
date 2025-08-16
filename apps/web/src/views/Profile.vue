@@ -3,10 +3,10 @@
     <div class="profile-container">
       <div class="profile-header">
         <h1 class="page-title">个人中心</h1>
-        <AButton type="text" danger @click="handleLogout">
-          <AIcon icon="icon-export" />
+        <Button type="text" danger @click="handleLogout">
+          <IconExport />
           退出登录
-        </AButton>
+        </Button>
       </div>
 
       <div class="profile-content">
@@ -47,14 +47,14 @@
         <div class="actions-section">
           <h3 class="section-title">快速操作</h3>
           <div class="action-buttons">
-            <AButton type="primary" @click="router.push('/rooms')">
-              <AIcon icon="icon-apps" />
+            <Button type="primary" @click="router.push('/rooms')">
+              <IconApps />
               房间列表
-            </AButton>
-            <AButton @click="router.push('/rooms/create')">
-              <AIcon icon="icon-plus" />
+            </Button>
+            <Button @click="router.push('/rooms/create')">
+              <IconPlus />
               创建房间
-            </AButton>
+            </Button>
           </div>
         </div>
       </div>
@@ -65,7 +65,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { AButton, AIcon, Modal, Message } from '@arco-design/web-vue'
+import { Button, Modal, Message } from '@arco-design/web-vue'
+import { IconExport, IconApps, IconPlus } from '@arco-design/web-vue/es/icon'
 import { useAuthStore } from '@/stores'
 
 const router = useRouter()

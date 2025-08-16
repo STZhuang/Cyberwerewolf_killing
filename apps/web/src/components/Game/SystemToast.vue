@@ -15,7 +15,7 @@
         tabindex="0"
       >
         <div class="toast-icon">
-          <AIcon :icon="typeIcon" />
+          <component :is="typeIcon" />
         </div>
         
         <div class="toast-content">
@@ -23,7 +23,7 @@
           <p v-if="message" class="toast-message">{{ message }}</p>
         </div>
         
-        <AButton
+        <Button
           v-if="showCloseButton"
           type="text"
           size="mini"
@@ -31,8 +31,8 @@
           @click="close"
           aria-label="关闭通知"
         >
-          <AIcon icon="icon-close" />
-        </AButton>
+          <IconClose />
+        </Button>
         
         <div v-if="duration > 0" class="toast-progress">
           <div
@@ -47,7 +47,14 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { AIcon, AButton } from '@arco-design/web-vue'
+import { Button } from '@arco-design/web-vue'
+import { 
+  IconCheckCircle, 
+  IconCloseCircle, 
+  IconExclamationCircle, 
+  IconInfoCircle,
+  IconClose 
+} from '@arco-design/web-vue/es/icon'
 import type { SystemToastProps } from '@/types'
 
 interface Props extends SystemToastProps {
@@ -84,13 +91,13 @@ const toastClasses = computed(() => [
 ])
 
 const typeIcon = computed(() => {
-  const iconMap: Record<string, string> = {
-    success: 'icon-check-circle',
-    error: 'icon-close-circle',
-    warning: 'icon-exclamation-circle',
-    info: 'icon-info-circle'
+  const iconMap: Record<string, any> = {
+    success: IconCheckCircle,
+    error: IconCloseCircle,
+    warning: IconExclamationCircle,
+    info: IconInfoCircle
   }
-  return iconMap[props.type] || 'icon-info-circle'
+  return iconMap[props.type] || IconInfoCircle
 })
 
 // Lifecycle

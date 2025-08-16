@@ -18,7 +18,7 @@ class BaseEvent(ABC):
     """基础事件类"""
     game_id: str
     timestamp: datetime
-    actor: Optional[str] = None  # seat number or "system"
+    actor: Optional[str]  # seat number or "system"
     
     @abstractmethod
     def get_event_type(self) -> str:
